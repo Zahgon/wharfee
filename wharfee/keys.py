@@ -24,21 +24,21 @@ def get_key_bindings(set_long_options, get_long_options, set_fuzzy_match, get_fu
         """
         When F2 has been pressed, fill in the "help" command.
         """
-        event.app.current_buffer.insert_text("help")
+        pass
 
     @kb.add(Keys.F3)
     def _(event):
         """
         Enable/Disable long option name suggestion.
         """
-        set_long_options(not get_long_options())
+        pass
 
     @kb.add(Keys.F4)
     def _(event):
         """
         Enable/Disable fuzzy matching.
         """
-        set_fuzzy_match(not get_fuzzy_match())
+        pass
 
     @kb.add(Keys.F10)
     def _(event):
@@ -57,10 +57,6 @@ def get_key_bindings(set_long_options, get_long_options, set_fuzzy_match, get_fu
 
         If the menu is showing, select the next completion.
         """
-        b = event.app.current_buffer
-        if b.complete_state:
-            b.complete_next()
-        else:
-            b.start_completion(select_first=False)
+        pass
 
     return kb

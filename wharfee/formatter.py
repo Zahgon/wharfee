@@ -216,10 +216,7 @@ def is_plain_lists(lst):
     :param lst:
     :return: boolean
     """
-    for x in lst:
-        if not is_plain_list(x):
-            return False
-    return True
+    pass
 
 
 def is_plain_list(lst):
@@ -399,27 +396,15 @@ def filter_dict(data, display_keys):
     :param data: dict
     :return: dict
     """
-    if data and isinstance(data, list) and isinstance(data[0], dict):
-        result = []
-        for item in data:
-            filtered = {}
-            for k, v in item.items():
-                if k.lower() in display_keys:
-                    filtered[k] = v
-            result.append(filtered)
-        return result
-    return data
+    pass
 
 
 def filter_ps(data):
-    display_keys = set([
-        'status', 'created', 'image', 'id', 'command', 'names', 'ports'])
-    return filter_dict(data, display_keys)
+    pass
 
 
 def filter_volume_ls(data):
-    display_keys = set(['driver', 'name'])
-    return filter_dict(data, display_keys)
+    pass
 
 
 DATA_FILTERS = {

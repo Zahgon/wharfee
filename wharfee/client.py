@@ -211,9 +211,7 @@ class DockerClient(object):
         container = args[0]
 
         def on_after():
-            self.is_refresh_containers = True
-            self.is_refresh_running = True
-            return ['\rDetached from {0}.'.format(container)]
+            pass
 
         self.after = on_after
 
@@ -236,57 +234,28 @@ class DockerClient(object):
         Placeholder for commands to be implemented.
         :return: iterable
         """
-        return ['Not implemented.']
+        pass
 
     def version(self, *_):
         """
         Return the version. Equivalent of docker version.
         :return: list of tuples
         """
-
-        try:
-            verdict = self.instance.version()
-            return verdict
-        except ConnectionError as ex:
-            raise DockerPermissionException(ex)
+        pass
 
     def info(self, *_):
         """
         Return the system info. Equivalent of docker info.
         :return: list of tuples
         """
-        info_dict = self.instance.info()
-        return info_dict
+        pass
 
     def inspect(self, *args, **_):
         """
         Return image or container info. Equivalent of docker inspect.
         :return: dict
         """
-
-        if not args or len(args) == 0:
-            yield 'Container or image ID is required.'
-
-        cids, cnames, imids, imnames = set(), set(), set(), set()
-
-        cs = self.containers(all=True)
-        if cs and len(cs) > 0 and isinstance(cs[0], dict):
-            cids = set([c['Id'] for c in cs])
-            cnames = set([name for c in cs for name in c['Names']])
-
-        ims = self.images(all=True)
-        if ims and len(ims) > 0 and isinstance(ims[0], dict):
-            imids = set([i['Id'] for i in ims])
-            imnames = set([i['Repository'] for i in ims])
-
-        for name in args:
-            if name in cids or name in cnames:
-                info = self.instance.inspect_container(name)
-            elif name in imids or name in imnames:
-                info = self.instance.inspect_image(name)
-            else:
-                info = 'Container or image ID is required.'
-            yield info
+        pass
 
     def containers(self, *_, **kwargs):
         """
@@ -331,14 +300,7 @@ class DockerClient(object):
         :param kwargs:
         :return: Container ID or iterable output.
         """
-        if not args:
-            return ['Container name is required.']
-
-        kwargs['container'] = args[0]
-
-        self.instance.pause(**kwargs)
-
-        return [kwargs['container']]
+        pass
 
     def port(self, *args, **_):
         """
@@ -346,23 +308,7 @@ class DockerClient(object):
         :param kwargs:
         :return: Container ID or iterable output.
         """
-        if not args:
-            return ['Container name is required.']
-
-        port_args = [args[0], None]
-        port_args[1] = args[1] if len(args) > 1 else None
-
-        result = self.instance.port(*port_args)
-        if result:
-            return result
-
-        result = self.instance.inspect_container(port_args[0])
-        if result:
-            result = result.get('NetworkSettings', {}).get('Ports', None)
-            if result:
-                return result
-
-        return ['There are no port mappings for {0}.'.format(args[0])]
+        pass
 
     def rm(self, *args, **kwargs):
         """
@@ -370,58 +316,7 @@ class DockerClient(object):
         :param kwargs:
         :return: Container ID or iterable output.
         """
-
-        truncate_output = False
-
-        all_stopped = 'all_stopped' in kwargs and kwargs['all_stopped']
-        all = 'all' in kwargs and kwargs['all']
-
-        if all_stopped:
-            if args and len(args) > 0:
-                return ['Provide either --all-stopped, or container name(s).']
-
-            containers = self.instance.containers(
-                quiet=True,
-                filters={'status': 'exited'})
-
-            if not containers or len(containers) == 0:
-                return ['There are no stopped containers.']
-
-            containers = [c['Id'] for c in containers]
-            truncate_output = True
-
-        elif all:
-            if args and len(args) > 0:
-                return ['Provide either --all, or container name(s).']
-
-            containers = self.instance.containers(quiet=True, all=True)
-
-            if not containers or len(containers) == 0:
-                return ['There are no containers.']
-
-            containers = [c['Id'] for c in containers]
-            truncate_output = True
-
-        else:
-            containers = args
-
-        kwargs = allowed_args('rm', **kwargs)
-
-        def stream():
-            for container in containers:
-                try:
-                    self.instance.remove_container(container, **kwargs)
-                    self.is_refresh_containers = True
-                    self.is_refresh_running = True
-                    if truncate_output:
-                        yield "{0:.25}".format(container)
-                    else:
-                        yield container
-                except APIError as ex:
-                    yield '{0:.25}: {1}'.format(container, ex.explanation)
-            yield 'Removed: {0} container(s).'.format(len(containers) if containers else 0)
-
-        return stream()
+        pass
 
     def rmi(self, *args, **kwargs):
         """
@@ -429,54 +324,7 @@ class DockerClient(object):
         :param kwargs:
         :return: Image name.
         """
-
-        truncate_output = False
-
-        all_dangling = 'all_dangling' in kwargs and kwargs['all_dangling']
-        all = 'all' in kwargs and kwargs['all']
-
-        if all_dangling:
-            if args and len(args) > 0:
-                return ['Provide either --all-dangling, or image name(s).']
-
-            images = self.instance.images(
-                quiet=True,
-                filters={'dangling': True})
-
-            if not images or len(images) == 0:
-                return ['There are no dangling images.']
-
-            truncate_output = True
-
-        elif all:
-            if args and len(args) > 0:
-                return ['Provide either --all, or image name(s).']
-
-            images = self.instance.images(quiet=True, all=True)
-
-            if not images or len(images) == 0:
-                return ['There are no images.']
-
-            truncate_output = True
-
-        else:
-            images = args
-
-        kwargs = allowed_args('rmi', **kwargs)
-
-        def stream():
-            for image in images:
-                try:
-                    self.instance.remove_image(image, **kwargs)
-                    self.is_refresh_images = True
-                    if truncate_output:
-                        yield "{:.25}".format(image)
-                    else:
-                        yield image
-                except APIError as ex:
-                    yield '{0:.25}: {1}'.format(image, ex.explanation)
-
-        return stream()
+        pass
 
     def run(self, *args, **kwargs):
         """
@@ -528,32 +376,7 @@ class DockerClient(object):
         :param kwargs:
         :return: Container ID or iterable output.
         """
-        if not args:
-            return ['Image name is required.']
-
-        called, args, kwargs = self.call_external_cli('create', *args, **kwargs)
-        if not called:
-            kwargs['image'] = args[0]
-            kwargs['command'] = args[1:] if len(args) > 1 else []
-
-            kwargs = self._add_port_bindings(kwargs)
-            kwargs = self._add_exposed_ports(kwargs)
-            kwargs = self._add_link_bindings(kwargs)
-            kwargs = self._add_volumes_from(kwargs)
-            kwargs = self._add_volumes(kwargs)
-            kwargs = self._add_network_mode(kwargs)
-
-            create_args = allowed_args('create', **kwargs)
-            result = self.instance.create_container(**create_args)
-
-            if result:
-                if "Warnings" in result and result['Warnings']:
-                    return [result['Warnings']]
-                if "Id" in result and result['Id']:
-                    self.is_refresh_containers = True
-                    return [result['Id']]
-
-            return ['There was a problem creating the container.']
+        pass
 
     def rename(self, *args, **kwargs):
         """
@@ -561,11 +384,7 @@ class DockerClient(object):
         :param kwargs:
         :return: None.
         """
-        if not args or len(args) < 2:
-            return ['Container name and new name are required.']
-
-        self.instance.rename(*args)
-        self.is_refresh_containers = True
+        pass
 
     def restart(self, *args, **kwargs):
         """
@@ -590,16 +409,7 @@ class DockerClient(object):
         :param kwargs:
         :return: Volume name.
         """
-        if not kwargs:
-            return ['Volume name is required.']
-
-        allowed = allowed_args('volume create', **kwargs)
-
-        allowed = self._add_opts(allowed)
-
-        result = self.instance.create_volume(**allowed)
-        self.is_refresh_volumes = True
-        return [result['Name']]
+        pass
 
     @if_exception_return(InvalidVersion, None)
     def volume_ls(self, *args, **kwargs):
@@ -629,21 +439,7 @@ class DockerClient(object):
         :param kwargs:
         :return: Volume name.
         """
-        if not args:
-            return ['Volume name is required.']
-
-        def stream():
-            for volume in args:
-                try:
-                    self.instance.remove_volume(volume)
-                    self.is_refresh_volumes = True
-                    yield volume
-                except APIError as x:
-                    yield 'Could not remove volume {0}: {1}.'.format(
-                        volume,
-                        x.explanation)
-
-        return stream()
+        pass
 
     @if_exception_return(InvalidVersion, None)
     def volume_inspect(self, *args, **_):
@@ -651,18 +447,7 @@ class DockerClient(object):
         Return volume info. Equivalent of docker volume ls.
         :return: dict
         """
-
-        if not args or len(args) == 0:
-            yield 'Volume name is required.'
-
-        vnames = self.volume_ls(quiet=True)
-
-        for vname in args:
-            if vname in vnames:
-                info = self.instance.inspect_volume(vname)
-                yield info
-            else:
-                yield "Volume not found: {0}".format(vname)
+        pass
 
     def tag(self, *args, **kwargs):
         """
@@ -670,22 +455,7 @@ class DockerClient(object):
         :param kwargs:
         :return: Iamge ID.
         """
-        if not args or len(args) < 2:
-            return ['Image name and repository name are required.']
-
-        img = args[0]
-        if ':' in args[1]:
-            repo, tag = args[1].rsplit(':', 1)
-        else:
-            repo, tag = args[1], None
-
-        result = self.instance.tag(
-            image=img, repository=repo, tag=tag, **kwargs)
-
-        if result:
-            return ['Tagged {0} into {1}.'.format(*args)]
-        else:
-            return ['Error tagging {0} into {1}.'.format(*args)]
+        pass
 
     def _add_filters(self, params):
         """
@@ -704,10 +474,7 @@ class DockerClient(object):
         :param params: dict
         :return dict
         """
-        if params.get('driver_opts', None):
-            opts = parse_kv_as_dict(params['driver_opts'], False)
-            params['driver_opts'] = opts
-        return params
+        pass
 
     def _add_volumes(self, params):
         """
@@ -821,16 +588,7 @@ class DockerClient(object):
         :param repo:
         :return: (boolean, "error message")
         """
-        # Username: only [a-z0-9_] are allowed, size between 4 and 30
-        if '/' not in repo:
-            return False, 'Format: user_name/repository_name[:tag].'
-
-        user_name, repo_name = repo.split('/')
-        user_pattern = re.compile(r'^[a-z0-9_]{4,30}$')
-        if not user_pattern.match(user_name):
-            return False, 'Only [a-z0-9_] are allowed in user name, ' \
-                          'size between 4 and 30'
-        return True, None
+        pass
 
     def execute(self, *args, **kwargs):
         """
@@ -838,34 +596,7 @@ class DockerClient(object):
         :param kwargs:
         :return: Container ID or iterable output.
         """
-        if not args or len(args) < 2:
-            return ['Container ID and command is required.']
-
-        called, args, kwargs = self.call_external_cli('exec', *args, **kwargs)
-        if not called:
-            kwargs['container'] = args[0]
-            kwargs['cmd'] = args[1:]
-
-            is_detach = kwargs.pop('detach')
-
-            exec_args = allowed_args('exec', **kwargs)
-            result = self.instance.exec_create(**exec_args)
-
-            if result and 'Id' in result:
-                output = self.instance.exec_start(
-                    result['Id'],
-                    detach=is_detach,
-                    stream=True)
-                # Decode bytes to string for Python 3 compatibility
-                def decode_output(stream):
-                    for chunk in stream:
-                        if isinstance(chunk, bytes):
-                            yield chunk.decode('utf-8', errors='replace')
-                        else:
-                            yield chunk
-                return decode_output(output)
-
-            return ['There was a problem executing the command.']
+        pass
 
     def build(self, *args, **kwargs):
         """
@@ -873,15 +604,7 @@ class DockerClient(object):
         :param kwargs:
         :return: Iterable output.
         """
-        if not args:
-            return ['Directory path or URL is required.']
-
-        kwargs['path'] = args[0]
-        kwargs['rm'] = bool(kwargs['rm'])
-
-        self.is_refresh_images = True
-
-        return self.instance.build(**kwargs)
+        pass
 
     def shell(self, *args, **_):
         """
@@ -890,20 +613,7 @@ class DockerClient(object):
         :param kwargs:
         :return: None
         """
-        if not args:
-            return ['Container name or ID is required.']
-
-        container = args[0]
-
-        shellcmd = 'bash'
-        if len(args) > 1:
-            shellcmd = ' '.join(args[1:])
-
-        self.after = lambda: ['\rShell to {0} is closed.'.format(container)]
-
-        command = 'docker exec -it {0} {1}'.format(container, shellcmd)
-        process = pexpect.spawnu(command)
-        process.interact()
+        pass
 
     def start(self, *args, **kwargs):
         """
@@ -923,17 +633,7 @@ class DockerClient(object):
 
             if 'remove' in kwargs and kwargs['remove']:
                 def on_after():
-                    container = kwargs['container']
-                    try:
-                        self.instance.stop(container)
-                        self.instance.remove_container(container)
-                        yield "Removed container {0:.25} on exit.".format(
-                            container)
-                    except APIError as ex:
-                        yield "{0:.25}: {1}.".format(container, ex.explanation)
-
-                    self.is_refresh_containers = True
-                    self.is_refresh_running = True
+                    pass
 
                 self.after = on_after
 
@@ -979,11 +679,7 @@ class DockerClient(object):
         :param kwargs:
         :return: None
         """
-        self.after = lambda: ['\r']
-
-        command = format_command_line('login', False, args, kwargs)
-        process = pexpect.spawnu(command)
-        process.interact()
+        pass
 
     def logs(self, *args, **kwargs):
         """
@@ -1117,12 +813,7 @@ class DockerClient(object):
         :param kwargs:
         :return: Container ID or iterable output.
         """
-        if not args:
-            return ['Container name is required.']
-
-        container = args[0]
-        result = self.instance.top(container, **kwargs)
-        return result
+        pass
 
     def pull(self, *args, **kwargs):
         """
@@ -1130,16 +821,7 @@ class DockerClient(object):
         :param kwargs:
         :return: Container ID or iterable output.
         """
-
-        if not args:
-            return ['Image name is required.']
-
-        image = args[0]
-        kwargs['stream'] = True
-        result = self.instance.pull(image, **kwargs)
-        self.is_refresh_images = True
-
-        return result
+        pass
 
     def push(self, *args, **kwargs):
         """
@@ -1147,26 +829,7 @@ class DockerClient(object):
         :param kwargs:
         :return: interactive.
         """
-        if not args or len(args) < 1:
-            return ['Image name (tagged) is required.']
-
-        tag_valid, tag_message = self._is_repo_tag_valid(args[0])
-        if not tag_valid:
-            return [tag_message]
-
-        self.after = lambda: ['\r']
-
-        # TODO: this command didn't have to use pexpect.
-        # But it was easier to call the official CLI than try and figure out
-        # why requests throw this error:
-        # File "venv/wharfee/lib/python2.7/site-packages/requests/packages/
-        # urllib3/response.py", line 267, in read
-        # raise ReadTimeoutError(self._pool, None, 'Read timed out.')
-        # requests.packages.urllib3.exceptions.ReadTimeoutError:
-        # HTTPSConnectionPool(host='192.168.59.103', port=2376): Read timed out.
-        command = format_command_line('push', False, args, kwargs)
-        process = pexpect.spawnu(command)
-        process.interact()
+        pass
 
     def unpause(self, *args, **kwargs):
         """
@@ -1174,14 +837,7 @@ class DockerClient(object):
         :param kwargs:
         :return: Container ID or iterable output.
         """
-        if not args:
-            return ['Container name is required.']
-
-        kwargs['container'] = args[0]
-
-        self.instance.unpause(**kwargs)
-
-        return [kwargs['container']]
+        pass
 
     def call_external_cli(self, cmd, *args, **kwargs):
         """
@@ -1209,14 +865,10 @@ class DockerClient(object):
         def on_after_interactive():
             # \r is to make sure when there is some error output,
             # prompt is back to beginning of line
-            self.is_refresh_containers = True
-            self.is_refresh_running = True
-            return ['\rInteractive terminal is closed.']
+            pass
 
         def on_after_attach():
-            self.is_refresh_containers = True
-            self.is_refresh_running = True
-            return ['Container exited.\r']
+            pass
 
         if is_force or is_interactive or is_tty or (is_attach and not is_attach_bool):
             self.after = on_after_attach if is_attach or (not is_interactive and not is_tty) else on_after_interactive

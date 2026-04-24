@@ -71,18 +71,14 @@ class WharfeeCli(object):
 
         :return:
         """
-        default_config = os.path.join(
-            self.get_package_path(), self.config_template)
-        write_default_config(default_config, self.config_name)
-        return read_config(self.config_name, default_config)
+        pass
 
     def get_package_path(self):
         """
         Find out pakage root path.
         :return: string: path
         """
-        from wharfee import __file__ as package_root
-        return os.path.dirname(package_root)
+        pass
 
     def set_less_opts(self):
         """
@@ -100,9 +96,7 @@ class WharfeeCli(object):
 
         :return: string with old options
         """
-        opts = os.environ.get('LESS', '')
-        os.environ['LESS'] = '-RXF'
-        return opts
+        pass
 
     def revert_less_opts(self):
         """
@@ -120,7 +114,7 @@ class WharfeeCli(object):
         """
         Clear the screen.
         """
-        click.clear()
+        pass
 
     def set_completer_options(self, cons=True, runs=True, imgs=True, vols=True):
         """
@@ -206,8 +200,7 @@ class WharfeeCli(object):
 
     def refresh_completions_force(self):
         """Force refresh and make it visible."""
-        self.set_completer_options()
-        click.echo('Refreshed completions.')
+        pass
 
     def refresh_completions(self):
         """

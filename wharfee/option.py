@@ -104,56 +104,56 @@ class CommandOption(object):
         If this option is a list of choices.
         :return: boolean
         """
-        return self.option_type == CommandOption.TYPE_CHOICE or self.choices
+        pass
 
     def is_type_container(self):
         """
         Should this option suggest container name?
         :return: boolean
         """
-        return self.option_type == CommandOption.TYPE_CONTAINER
+        pass
 
     def is_type_running(self):
         """
         Should this option suggest running container name?
         :return: boolean
         """
-        return self.option_type == CommandOption.TYPE_CONTAINER_RUN
+        pass
 
     def is_type_image(self):
         """
         Should this option suggest image name?
         :return: boolean
         """
-        return self.option_type == CommandOption.TYPE_IMAGE
+        pass
 
     def is_type_tagged(self):
         """
         Should this option suggest tagged image name?
         :return: boolean
         """
-        return self.option_type == CommandOption.TYPE_IMAGE_TAGGED
+        pass
 
     def is_type_volume(self):
         """
         Should this option suggest volume name?
         :return: boolean
         """
-        return self.option_type == CommandOption.TYPE_VOLUME
+        pass
 
     def is_type_filepath(self):
         """
         Should this option suggest filename?
         :return: boolean
         """
-        return self.option_type == CommandOption.TYPE_FILEPATH
+        pass
 
     def is_type_dirname(self):
         """
         Should this option suggest directory name?
         :return: boolean
         """
-        return self.option_type == CommandOption.TYPE_DIRPATH
+        pass
 
     def get_name(self, is_long):
         """
@@ -172,10 +172,7 @@ class CommandOption(object):
         :param word:
         :return:
         """
-        if word:
-            return (self.long_name and self.long_name.startswith(word)) or \
-                   (self.short_name and self.short_name.startswith(word))
-        return True
+        pass
 
     @property
     def name(self):
@@ -183,7 +180,7 @@ class CommandOption(object):
         Getter for short name
         :return: string
         """
-        return self.long_name if self.long_name else self.short_name
+        pass
 
     @property
     def names(self):
@@ -191,12 +188,7 @@ class CommandOption(object):
         Getter for all possible names.
         :return: list
         """
-        if self.short_name and self.long_name:
-            return [self.short_name, self.long_name]
-        elif self.long_name:
-            return [self.long_name]
-        else:
-            return [self.short_name]
+        pass
 
     def __repr__(self):
         """

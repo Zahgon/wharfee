@@ -35,7 +35,7 @@ class DockerCompleter(Completer):
         Setter for enabled/disabled property.
         :param enabled: boolean
         """
-        self.enabled = enabled
+        pass
 
     def set_volumes(self, volumes):
         """
@@ -105,51 +105,7 @@ class DockerCompleter(Completer):
         :param document:
         :param _: complete_event
         """
-        if not self.enabled:
-            return []
-
-        if DockerCompleter.in_quoted_string(document.text):
-            return []
-
-        word_before_cursor = document.get_word_before_cursor(WORD=True)
-        words = DockerCompleter.get_tokens(document.text)
-        command_name = split_command_and_args(words)[0]
-
-        in_command = (len(words) > 1) or \
-                     ((not word_before_cursor) and command_name)
-
-        if in_command:
-            previous_word = ''
-            previous_start = document.find_start_of_previous_word(WORD=True)
-
-            if previous_start == -len(word_before_cursor):
-                previous_start = document.find_start_of_previous_word(
-                    WORD=True, count=2)
-
-            if previous_start:
-                previous_word = document.text_before_cursor[previous_start:]
-                previous_word = previous_word.strip().split()[0]
-
-            params = words[1:] if (len(words) > 1) else []
-            completions = DockerCompleter.find_command_matches(
-                command_name,
-                word_before_cursor,
-                previous_word,
-                params,
-                self.containers,
-                self.running,
-                self.images,
-                self.tagged,
-                self.volumes,
-                self.long_option_mode,
-                self.fuzzy)
-        else:
-            completions = DockerCompleter.find_matches(
-                word_before_cursor,
-                self.all_completions,
-                self.fuzzy)
-
-        return completions
+        pass
 
     @staticmethod
     def find_command_matches(command, word='', prev='', params=None,
@@ -171,103 +127,7 @@ class DockerCompleter(Completer):
         :param fuzzy: boolean
         :return: iterable
         """
-
-        params = set(params) if params else set([])
-        current_opt = find_option(command, prev) if prev else None
-
-        add_directory = False
-        add_filepath = False
-
-        if command in COMMAND_OPTIONS:
-            opt_suggestions = []
-            if current_opt:
-                if current_opt.is_type_container():
-                    opt_suggestions = containers
-                elif current_opt.is_type_running():
-                    opt_suggestions = running
-                elif current_opt.is_type_image():
-                    opt_suggestions = images
-                elif current_opt.is_type_tagged():
-                    opt_suggestions = tagged
-                elif current_opt.is_type_volume():
-                    opt_suggestions = volumes
-                elif current_opt.is_type_choice():
-                    opt_suggestions = current_opt.choices
-                elif current_opt.is_type_dirname():
-                    add_directory = True
-                elif current_opt.is_type_filepath():
-                    add_filepath = True
-
-                for m in DockerCompleter.find_collection_matches(
-                        word, opt_suggestions, fuzzy):
-                    yield m
-
-            if not opt_suggestions:
-
-                def is_unused(o):
-                    """
-                    Do not offer options that user already set.
-                    Unless user may want to set them multiple times.
-                    Example: -e VAR1=value1 -e VAR2=value2.
-                    """
-                    return o.long_name not in params and o.short_name not in params
-
-                def is_current(o):
-                    return word in o.names
-
-                def get_opt_name(t):
-                    return t.get_name(long_options)
-
-                positionals = []
-                possible_options = [x for x in all_options(command) if is_unused(x)
-                                    or is_current(x)
-                                    or x.is_multiple]
-                named_options = sorted([x for x in possible_options if x.name.startswith('-')],
-                                       key=get_opt_name)
-                positional_options = [x for x in possible_options if not x.name.startswith('-')]
-
-                named_option_map = {}
-
-                for x in named_options:
-                    suggestion = x.get_name(long_options)
-                    if suggestion:
-                        named_option_map[suggestion] = x.display
-
-                for m in DockerCompleter.find_dictionary_matches(
-                        word, named_option_map, fuzzy):
-                    yield m
-
-                for opt in positional_options:
-                    if opt.is_type_container():
-                        positionals = chain(positionals, containers)
-                    elif opt.is_type_image():
-                        positionals = chain(positionals, images)
-                    elif opt.is_type_running():
-                        positionals = chain(positionals, running)
-                    elif opt.is_type_tagged():
-                        positionals = chain(positionals, tagged)
-                    elif opt.is_type_volume():
-                        positionals = chain(positionals, volumes)
-                    elif opt.is_type_choice():
-                        positionals = chain(positionals, opt.choices)
-                    elif opt.is_type_dirname():
-                        add_directory = True
-                    elif opt.is_type_filepath():
-                        add_filepath = True
-
-                # Also return completions for positional options (images,
-                # containers, etc.)
-                for m in DockerCompleter.find_collection_matches(
-                        word, positionals, fuzzy):
-                    yield m
-
-        # Special handling for path completion
-        if add_directory:
-            for m in DockerCompleter.find_directory_matches(word):
-                yield m
-        if add_filepath:
-            for m in DockerCompleter.find_filepath_matches(word):
-                yield m
+        pass
 
     @staticmethod
     def find_filepath_matches(word):
@@ -276,12 +136,7 @@ class DockerCompleter(Completer):
         :param word:
         :return: iterable
         """
-        base_path, last_path, position = parse_path(word)
-        paths = list_dir(word, dirs_only=False)
-        for name in sorted(paths):
-            suggestion = complete_path(name, last_path)
-            if suggestion:
-                yield Completion(suggestion, position)
+        pass
 
     @staticmethod
     def find_directory_matches(word):
@@ -290,12 +145,7 @@ class DockerCompleter(Completer):
         :param word:
         :return: iterable
         """
-        base_dir, last_dir, position = parse_path(word)
-        dirs = list_dir(word, dirs_only=True)
-        for name in sorted(dirs):
-            suggestion = complete_path(name, last_dir)
-            if suggestion:
-                yield Completion(suggestion, position)
+        pass
 
     @staticmethod
     def find_dictionary_matches(word, dic, fuzzy):
@@ -306,14 +156,7 @@ class DockerCompleter(Completer):
         :param fuzzy: boolean
         :return: iterable
         """
-
-        if fuzzy:
-            for suggestion in fuzzyfinder.fuzzyfinder(word, dic.keys()):
-                yield Completion(suggestion, -len(word), dic[suggestion])
-        else:
-            for name in sorted(dic.keys()):
-                if name.startswith(word) or not word:
-                    yield Completion(name, -len(word), dic[name])
+        pass
 
     @staticmethod
     def find_collection_matches(word, lst, fuzzy):
@@ -324,14 +167,7 @@ class DockerCompleter(Completer):
         :param fuzzy: boolean
         :return: iterable
         """
-
-        if fuzzy:
-            for suggestion in fuzzyfinder.fuzzyfinder(word, lst):
-                yield Completion(suggestion, -len(word))
-        else:
-            for name in sorted(lst):
-                if name.startswith(word) or not word:
-                    yield Completion(name, -len(word))
+        pass
 
     @staticmethod
     def find_matches(text, collection, fuzzy):
@@ -342,11 +178,7 @@ class DockerCompleter(Completer):
         :param fuzzy: boolean
         :return: iterable
         """
-        text = DockerCompleter.last_token(text).lower()
-
-        for suggestion in DockerCompleter.find_collection_matches(
-                text, collection, fuzzy):
-            yield suggestion
+        pass
 
     @staticmethod
     def get_tokens(text):
@@ -355,11 +187,7 @@ class DockerCompleter(Completer):
         :param text:
         :return: list
         """
-        if text is not None:
-            text = text.strip()
-            words = DockerCompleter.safe_split(text)
-            return words
-        return []
+        pass
 
     @staticmethod
     def first_token(text):
@@ -368,17 +196,7 @@ class DockerCompleter(Completer):
         :param text:
         :return:
         """
-        if text is not None:
-            text = text.strip()
-            if len(text) > 0:
-                try:
-                    word = shlex_first_token(text)
-                    word = word.strip()
-                    return word
-                except:
-                    # no error, just do not complete
-                    pass
-        return ''
+        pass
 
     @staticmethod
     def last_token(text):
@@ -387,24 +205,14 @@ class DockerCompleter(Completer):
         :param text:
         :return:
         """
-        if text is not None:
-            text = text.strip()
-            if len(text) > 0:
-                word = DockerCompleter.safe_split(text)[-1]
-                word = word.strip()
-                return word
-        return ''
+        pass
 
     @staticmethod
     def safe_split(text):
         """
         Shlex can't always split. For example, "\" crashes the completer.
         """
-        try:
-            words = shlex_split(text)
-            return words
-        except:
-            return text
+        pass
 
     @staticmethod
     def in_quoted_string(text):
@@ -413,15 +221,4 @@ class DockerCompleter(Completer):
         :param text:
         :return:
         """
-        if text is not None:
-            text = text.strip()
-            if len(text) > 0 and ('"' in text or "'" in text):
-                stack = []
-                for char in text:
-                    if char in ['"', "'"]:
-                        if len(stack) > 0 and stack[-1] == char:
-                            stack = stack[:-1]
-                        else:
-                            stack.append(char)
-                return len(stack) > 0
-        return False
+        pass
